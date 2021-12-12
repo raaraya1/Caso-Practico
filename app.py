@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from model import model
+import matplotlib.pyplot as plt
 
 
 st.write('''
@@ -9,23 +10,17 @@ st.write('''
 
     ## **Contexto**
 
-    El problema surge de la necesidad de buscar la asignacion optima
+    El problema surge de la necesidad de buscar la asignación optima
     entre los precios que ofrecen los auditores para auditar un conjunto
-    de empresas. Asi, se espera que la solucion al problema contemple una
-    asignacion en donde cada empresa tiene asignado un auditor de forma de
+    de empresas. Así, se espera que la solución al problema contemple una
+    asignación en donde cada empresa tiene asignado un auditor de forma de
     reducir los costos totales del problema.
 
     ### **Datos**
+
 ''')
 
-# Archivos descargables
-st.sidebar.write('**Archivos descargables**')
-cost_matrix = pd.read_csv('https://raw.githubusercontent.com/raaraya1/Caso-Practico/main/cost_matrix.csv')
-st.sidebar.download_button(label='Matriz de costos',
-                           data=cost_matrix.to_csv(index=False),
-                           file_name='Matrix de Costos.csv',
-                           mime='text/csv')
-
+# Cargar datos
 st.sidebar.write('**Datos**')
 file_cost_matrix = st.sidebar.file_uploader('Selecciona el archivo con la matriz de costos (.csv)')
 
@@ -47,7 +42,7 @@ if file_cost_matrix:
         st.dataframe(df_cost_matrix)
 
     # Grafico de Datos
-    with st.expander('Visualizacion de costos'):
+    with st.expander('Visualización de costos'):
         auditores = df_cost_matrix.columns[1:]
         aud_selct = st.multiselect('Auditores', options=auditores, default=[i for i in auditores])
         df_cost_matrix.index = [i+1 for i in range(len(df_cost_matrix))]
@@ -63,10 +58,108 @@ if file_cost_matrix:
             fig = df_new.plot(kind='bar', title='Costos de auditores por empresa', xlabel='Empresas', ylabel='Valores').get_figure()
             st.pyplot(fig)
 
+        # En caso de cargar el archivo de descuentos
+        c1, c2, c3 = st.columns([3, 10, 1])
+        c2.write('''
+        #### **RESUMEN DE COSTOS CON DESCUENTOS**
+        ''')
+
+        if file_discounts != None:
+            D_1jd = {'sin desc':[], 'desc 1':[]}
+            D_2jd = {'sin desc':[], 'desc 1':[], 'desc 2':[], 'desc 3':[], 'desc 4':[]}
+            D_3jd = {'sin desc':[], 'desc 1':[], 'desc 2':[], 'desc 3':[], 'desc 4':[], 'desc 5':[], 'desc 6':[], 'desc 7':[], 'desc 8':[], 'desc 9':[], 'desc 10':[]}
+            D_4jd = {'sin desc':[], 'desc 1':[], 'desc 2':[]}
+            D_5jd = {'sin desc':[], 'desc 1':[], 'desc 2':[], 'desc 3':[], 'desc 4':[]}
+
+            # Casos sin descuentos
+            for i in df_cost_matrix.index:
+                D_1jd['sin desc'].append(df_cost_matrix['Auditor 1'][i])
+                D_2jd['sin desc'].append(df_cost_matrix['Auditor 2'][i])
+                D_3jd['sin desc'].append(df_cost_matrix['Auditor 3'][i])
+                D_4jd['sin desc'].append(df_cost_matrix['Auditor 4'][i])
+                D_5jd['sin desc'].append(df_cost_matrix['Auditor 5'][i])
+
+            for i in D_ijd:
+                # Descuentos auditor 1
+                if i[0] == 1:
+                ## Descuentos auditor 1 opcion 1
+                    if i[2] == 1: D_1jd['desc 1'].append(D_1jd['sin desc'][i[1]-1] - D_ijd[i])
+
+                # Descuentos auditor 2
+                elif i[0] == 2:
+                    if i[2] == 1: D_2jd['desc 1'].append(D_2jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 2: D_2jd['desc 2'].append(D_2jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 3: D_2jd['desc 3'].append(D_2jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 4: D_2jd['desc 4'].append(D_2jd['sin desc'][i[1]-1] - D_ijd[i])
+
+                # Descuentos auditor 3
+                elif i[0] == 3:
+                    if i[2] == 1: D_3jd['desc 1'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 2: D_3jd['desc 2'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 3: D_3jd['desc 3'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 4: D_3jd['desc 4'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 5: D_3jd['desc 5'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 6: D_3jd['desc 6'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 7: D_3jd['desc 7'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 8: D_3jd['desc 8'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 9: D_3jd['desc 9'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 10: D_3jd['desc 10'].append(D_3jd['sin desc'][i[1]-1] - D_ijd[i])
+
+                # Descuentos auditor 4
+                elif i[0] == 4:
+                    if i[2] == 1: D_4jd['desc 1'].append(D_4jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 2: D_4jd['desc 2'].append(D_4jd['sin desc'][i[1]-1] - D_ijd[i])
+
+                # Descuentos auditor 5
+                elif i[0] == 5:
+                    if i[2] == 1: D_5jd['desc 1'].append(D_5jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 2: D_5jd['desc 2'].append(D_5jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 3: D_5jd['desc 3'].append(D_5jd['sin desc'][i[1]-1] - D_ijd[i])
+                    elif i[2] == 4: D_5jd['desc 4'].append(D_5jd['sin desc'][i[1]-1] - D_ijd[i])
+
+            # Grafico completo
+            df1 = pd.DataFrame.from_dict(D_1jd)
+            df2 = pd.DataFrame.from_dict(D_2jd)
+            df3 = pd.DataFrame.from_dict(D_3jd)
+            df4 = pd.DataFrame.from_dict(D_4jd)
+            df5 = pd.DataFrame.from_dict(D_5jd)
+
+            df1.index = [i+1 for i in range(len(df_cost_matrix))]
+            df2.index = [i+1 for i in range(len(df_cost_matrix))]
+            df3.index = [i+1 for i in range(len(df_cost_matrix))]
+            df4.index = [i+1 for i in range(len(df_cost_matrix))]
+            df5.index = [i+1 for i in range(len(df_cost_matrix))]
+
+            # Filtramos empresas
+            df1_n = df1.loc[emp_selct]
+            df2_n = df2.loc[emp_selct]
+            df3_n = df3.loc[emp_selct]
+            df4_n = df4.loc[emp_selct]
+            df5_n = df5.loc[emp_selct]
+
+            fig, axes = plt.subplots(nrows=1, ncols=len(aud_selct), sharey=True, figsize=(20,10)) # figsize=(ancho, altura)
+            i = 0
+            if 'Auditor 1' in aud_selct:
+                df1_n.plot(ax=axes[i], kind='bar', title='Auditor 1')
+                i += 1
+            if 'Auditor 2' in aud_selct:
+                df2_n.plot(ax=axes[i], kind='bar', title='Auditor 2')
+                i += 1
+            if 'Auditor 3' in aud_selct:
+                df3_n.plot(ax=axes[i], kind='bar', title='Auditor 3')
+                i += 1
+            if 'Auditor 4' in aud_selct:
+                df4_n.plot(ax=axes[i], kind='bar', title='Auditor 4')
+                i += 1
+            if 'Auditor 5' in aud_selct: df5_n.plot(ax=axes[i], kind='bar', title='Auditor 5')
+
+            st.pyplot(fig)
+
+
     st.write('''
     ### **Modelo**
     ''')
-    with st.expander('Explicacion del Modelo'):
+    with st.expander('Explicación del Modelo'):
         st.write(r'''
 **Conjuntos**
 
@@ -76,11 +169,11 @@ $j \in J$ : Empresas
 
 $d \in D_{i}$: Descuentos variables que propone el auditor i
 
-**Parametros**
+**Parámetros**
 
 $C_{ij}$: Costo base por el cual el auditor i audita empresa j.
 
-$D_{ijd}$: Valor del descuento (opcion d) que se aplica a auditoria de empresa j realizada por auditor i.
+$D_{ijd}$: Valor del descuento (opción d) que se aplica a auditoria de empresa j realizada por auditor i.
 
 **Variables**
 
@@ -88,7 +181,7 @@ $X_{ij} \in (0, 1)$: Si auditor i audita empresa j.
 
 $Y_{ijd} \in (0, 1)$: Si el auditor i aplica descuento d en empresa j.
 
-**Funcion Objetivo**
+**Función Objetivo**
 
 $$
 min \sum_{i} \sum_{j} C_{ij} X_{ij} - \sum_{i} \sum_{j} \sum_{d} D_{ijd} Y_{ijd}
@@ -122,19 +215,19 @@ $$
 \sum_{i} \sum_{j} X_{ij} = 11
 $$
 
-4) Que todos los auditores ganen al menos 1 licitacion.
+4) Que todos los auditores ganen al menos 1 licitación.
 
 $$
 \sum_{j} X_{ij} \geq 1 \quad \forall i \in I
 $$
 
-5) Que ningun auditor audite mas de 5 auditorias.
+5) Que ningún auditor audite más de 5 auditorias.
 
 $$
 \sum_{j} X_{ij} \leq 5 \quad \forall i \in I
 $$
 
-6) Restriccion auditor EEFF
+6) Restricción auditor EEFF
 
 $$
 X_{17} = 0
@@ -154,7 +247,7 @@ $$
 
 **Restricciones de los descuentos**
 
-7) Solo se podra aplicar los descuentos donde correspondan. Dicho de otra manera, no puedo aplicar un descuento sobre una auditoria que no he asignado.
+7) Solo se podrá aplicar los descuentos donde correspondan. Dicho de otra manera, no puedo aplicar un descuento sobre una auditoria que no he asignado.
 
 $$
 Y_{ijd} \leq X_{ij} \quad \forall i \in I, j \in J, d \in D_{i}
@@ -166,7 +259,7 @@ $$
 Y_{ijd} \leq (1 - Y_{ijd'}) \quad \forall i \in I, j \in J, d \neq d' \in D_{i}
 $$
 
-9) Descuentos auditor 1 (presenta una unica opcion de descuento)
+9) Descuentos auditor 1 (presenta una única opción de descuento)
 
 $$
 Y_{1j1} \leq \frac{\sum_{j} X{1j}}{7} \quad \forall j \in J
@@ -260,7 +353,7 @@ $$
 Y_{5j4} \leq \frac{\sum_{j} C_{5j}X_{5j}}{7001} \quad \forall j \in J
 $$
 
-14) Nota: monto maximo de 450 para el auditor 2.
+14) Nota: monto máximo de 450 para el auditor 2.
 
 $$
 \sum_{j} \sum_{d \in D_2} D_{2jd}Y_{2jd} \leq 450
