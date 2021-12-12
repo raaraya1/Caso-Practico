@@ -1,6 +1,5 @@
 from gurobipy import Model, quicksum, GRB
 import numpy as np
-import streamlit as st
 
 class model:
     def __init__(self, C_ij):
@@ -41,27 +40,27 @@ class model:
         obj = m.addVar(vtype=GRB.CONTINUOUS)
 
         # -------------- Restriccioes generales -------------------
-        #3) Una empresa no puede ser auditada dos veces
+        #1) Una empresa no puede ser auditada dos veces
         for j in self.J:
           m.addConstr(quicksum(X[i, j] for i in self.I) <= 1)
 
-        #4) Auditor 1 inhabilitado para las empresas 2, 3, 8.
+        #2) Auditor 1 inhabilitado para las empresas 2, 3, 8.
         if 1 in self.I and 2 in self.J: m.addConstr(X[1, 2] == 0)
         if 1 in self.I and 3 in self.J: m.addConstr(X[1, 3] == 0)
         if 1 in self.I and 8 in self.J: m.addConstr(X[1, 8] == 0)
 
-        #10) Satisfacer demanda
+        #3) Satisfacer demanda
         m.addConstr(quicksum(X[i, j] for i in self.I for j in self.J) == len(self.J))
 
-        #2) Que todos los auditores ganen al menos 1 licitacion.
+        #4) Que todos los auditores ganen al menos 1 licitacion.
         for i in self.I:
           m.addConstr(quicksum(X[i, j] for j in self.J) >= 1)
 
-        #3) Que ningun auditor audite mas de 5 auditorias.
+        #5) Que ningun auditor audite mas de 5 auditorias.
         for i in self.I:
           m.addConstr(quicksum(X[i, j] for j in self.J) <= 5)
 
-        #4) Restriccion auditor EEFF
+        #6) Restriccion auditor EEFF
         if 1 in self.I and 7 in self.J: m.addConstr(X[1, 7] == 0)
         if 3 in self.I and 2 in self.J: m.addConstr(X[3, 2] == 0)
         if 3 in self.I and 5 in self.J: m.addConstr(X[3, 5] == 0)
@@ -72,13 +71,13 @@ class model:
         if self.D_ijd != None:
 
             # Restricciones para los descuentos
-            #1) Solo se podra aplicar los descuentos donde correspondan. Dicho de otra manera, no puedo aplicar un descuento sobre una auditoria que no he asignado.
+            #7) Solo se podra aplicar los descuentos donde correspondan. Dicho de otra manera, no puedo aplicar un descuento sobre una auditoria que no he asignado.
             for i in self.I:
               for j in self.J:
                 for d in self.D_i[i]:
                   m.addConstr(Y[i, j, d] <= X[i, j])
 
-            #2) No puedo acumular descuentos.
+            #8) No puedo acumular descuentos.
             for i in self.I:
               for j in self.J:
                 for d1 in self.D_i[i]:
@@ -86,12 +85,12 @@ class model:
                     if d1 != d2 and len(self.D_i[i]) > 1:
                       m.addConstr(Y[i, j, d1] <= (1 - Y[i, j, d2]))
 
-            #5) Descuentos auditor 1 (presenta una unica opcion de descuento)
+            #9) Descuentos auditor 1 (presenta una unica opcion de descuento)
             if 1 in self.I:
                 for j in self.J:
                   m.addConstr(Y[1, j, 1] <= (quicksum(X[1, j] for j in self.J)/7))
 
-            #6) Descuentos auditor 2 (presenta 3 opciones de descuentos).
+            #10) Descuentos auditor 2 (presenta 3 opciones de descuentos).
             if 2 in self.I:
                 for j in self.J:
                   m.addConstr(Y[2, j, 2] <= (quicksum(C_ij[2, j]*X[2, j] for j in self.J)/760))
@@ -102,13 +101,13 @@ class model:
                 for j in self.J:
                   m.addConstr(Y[2, j, 4] <= (quicksum(C_ij[2, j]*X[2, j] for j in self.J)/1950))
 
-            #7) Descuentos auditor 3 (presenta 10 opciones de descuentos)
+            #11) Descuentos auditor 3 (presenta 10 opciones de descuentos)
             if 3 in self.I:
                 for d in self.D_i[3]:
                   for j in self.J:
                     m.addConstr(Y[3, j, d] <= (quicksum(X[3, j] for j in self.J)/(d+1)))
 
-            #8) Descuentos auditor 4 (presenta 2 opciones de descuentos).
+            #12) Descuentos auditor 4 (presenta 2 opciones de descuentos).
             if 4 in self.I:
                 for j in self.J:
                   m.addConstr(Y[4, j, 1] <= (quicksum(X[4, j] for j in self.J)/2))
@@ -116,7 +115,7 @@ class model:
                 for j in self.J:
                   m.addConstr(Y[4, j, 2] <= (quicksum(X[4, j] for j in self.J)/6))
 
-            #9) Descuentos auditor 5 (presenta 4 opciones de descuentos)
+            #13) Descuentos auditor 5 (presenta 4 opciones de descuentos)
             if 5 in self.I:
                 for j in self.J:
                   m.addConstr(Y[5, j, 1] <= (quicksum(C_ij[5, j]*X[5, j] for j in self.J)/1801))
@@ -130,7 +129,7 @@ class model:
                 for j in self.J:
                   m.addConstr(Y[5, j, 4] <= (quicksum(C_ij[5, j]*X[5, j] for j in self.J)/7001))
 
-            #1) Nota: monto maximo de 450 para el auditor 2.
+            #14) Nota: monto maximo de 450 para el auditor 2.
             if 2 in self.I:
                 m.addConstr(quicksum(self.D_ijd[2, j, d]*Y[2, j, d] for j in self.J for d in self.D_i[2]) <= 450)
 
@@ -146,4 +145,9 @@ class model:
         m.setObjective(obj, GRB.MINIMIZE)
         m.optimize()
 
-        return obj.x
+        Z_sol = obj.x
+        X_sol = {(i, j):C_ij[i, j] for i in self.I for j in self.J if X[i, j].x > 0}
+        Y_sol = {(i, j, d):self.D_ijd[i, j, d] for i in self.I for j in self.J for d in self.D_i[i] if Y[i, j, d].x > 0}
+        Desc_total = np.sum([Y_sol[i] for i in Y_sol])
+
+        return Z_sol, X_sol, Y_sol, Desc_total
